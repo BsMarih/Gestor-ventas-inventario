@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestión de Ventas e inventario{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+    <aside>
+        <div class="logo-area">
+            <div class="logo-icon">📦</div>
+            <span class="logo-text">Núcleo</span>
+        </div>
+
+        <div class="menu-section-title">Menú Principal</div>
+        
+        <ul class="menu-list">
+            <!-- Usamos un bloque condicional o simplemente definimos qué clase 'active' se ilumina -->
+            <li class="menu-item {% block nav_index %}{% endblock %}">
+                <a href="{% url 'index' %}">Resumen</a>
+            </li>
+            <li class="menu-item {% block nav_inventory %}{% endblock %}">
+                <a href="{% url 'inventory' %}">Inventario</a>
+            </li>
+            <li class="menu-item {% block nav_sales %}{% endblock %}">
+                <a href="{% url 'sales' %}">Ventas</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main style="margin-left: 250px; padding: 20px;">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

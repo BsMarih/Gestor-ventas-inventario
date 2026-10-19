@@ -99,3 +99,11 @@ aside {
     background-color: #eef2ff;
     color: var(--primary);
 }
+
+/* --- Resumen (index) --- */
+
+.title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
