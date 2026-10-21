@@ -224,3 +224,5 @@ db.sqlite3
 .vscode/
 
 media/
+
+.DS_Store
