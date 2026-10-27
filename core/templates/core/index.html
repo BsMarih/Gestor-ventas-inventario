@@ -11,5 +11,63 @@
         <p class="subtitle">Una mirada clara a lo que está pasando en tu negocio.</p>
     </div>
 </div>
+
+<div class="stats-grid">
+    <!-- Ventas del mes -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon" style="color: #4f46e5; background-color: #eef2ff;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+            </div>
+            <span class="trend-badge neutral">~</span>
+        </div>
+        <div class="stat-info">
+            <span class="stat-title">Ventas del mes</span>
+            <div class="stat-value">${{ ventas_mes|default:"0" }}</div>
+        </div>
+    </div>
+
+    <!-- Ganancia estimada -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon" style="color: #059669; background-color: #d1fae5;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            </div>
+            <span class="trend-badge neutral">~</span>
+        </div>
+        <div class="stat-info">
+            <span class="stat-title">Ganancia estimada</span>
+            <div class="stat-value">${{ ganancia_estimada|default:"0" }}</div>
+        </div>
+    </div>
+
+    <!-- Productos activos -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon" style="color: #0284c7; background-color: #e0f2fe;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            </div>
+            <span class="trend-badge neutral">~</span>
+        </div>
+        <div class="stat-info">
+            <span class="stat-title">Productos activos</span>
+            <div class="stat-value">{{ total_productos|default:"0" }}</div>
+        </div>
+    </div>
+
+    <!-- Unidades vendidas -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon" style="color: #d97706; background-color: #fef3c7;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            </div>
+            <span class="trend-badge neutral">~</span>
+        </div>
+        <div class="stat-info">
+            <span class="stat-title">Unidades vendidas</span>
+            <div class="stat-value">{{ unidades_vendidas|default:"0" }}</div>
+        </div>
+    </div>
+</div>
     
 {% endblock %}
