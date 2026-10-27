@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Crear Producto{% endblock %}
+{% block nav_inventory %}active{% endblock %}
+
+{% block content %}
+    <h1>Crear Nuevo Elemento</h1>
+    <form method="post" action="/Create/">
+        {% csrf_token %}
+        {{form.as_ul}}
+        <button type="submit" class="btn btn-primary">Crear</button>
+        
+    </form>
+{% endblock %}
