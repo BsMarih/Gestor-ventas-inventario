@@ -100,10 +100,30 @@ aside {
     color: var(--primary);
 }
 
-/* --- Resumen (index) --- */
+/* --- Contenedor Principal --- */
+main {
+    margin-left: var(--sidebar-width);
+    background-color: var(--bg-main);
+    min-height: 100vh;
+}
+
+/* --- Títulos de páginas --- */
+.dashboard-content {
+    padding: 48px 56px; 
+}
+
+.title-page {
+    margin-bottom: 32px; 
+}
 
 .title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--text-primary);
+    font-size: 32px;  
+    font-weight: 800;
+    color: var(--text-primary)
+}
+
+.subtitle {
+    font-size: 15px;
+    color: var(--text-secondary); 
+    margin: 0;
 }
