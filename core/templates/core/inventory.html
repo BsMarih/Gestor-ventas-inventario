@@ -1,15 +1,67 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Resumen - Gestión de Ventas{% endblock %}
+{% block title %}Inventario - Gestión de Ventas{% endblock %}
 
 {% block nav_inventory %}active{% endblock %}
 
 {% block content %}
-<div class="dashboard-content">
-    <div class="title-page">
-        <h1 class="title">Inventario</h1>
-        <p class="subtitle">Gestiona existencias, precios y disponibilidad.</p>
-    </div>
-</div>
+    <h1>Inventario</h1>
+    <p>Gestiona existencias, precios y disponibilidad.</p>
+    <a href="{% url 'create_element' %}" class="btn btn-success mb-3">Crear Nuevo Elemento</a>
+
+    {% for e in elements %}
+        <div class="card mb-3">
+            <li class="list-group-item">
+                <p class="card-text"><h5 class="card-title"><a href="{% url 'detail' e.id %}">{{ e.name }}</a></h5></p>
+            </li>
+
+            <div class="card-body">
+                <p class="card-text">Precio: ${{ e.price }}</p>
+                <p class="card-text">Cantidad: {{ e.quantity }}</p>
+                <p class="card-text">Disponible: {% if e.quantity > 0 %}Sí{% else %}No{% endif %}</p>
+            </div>
+        </div>
+    {% endfor %}
     
+
+
+    <nav aria-label="Pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if elements.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ elements.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&laquo;</span>
+                </li>
+            {% endif %}
+
+            {% for num in elements.paginator.page_range %}
+                {% if elements.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > elements.number|add:'-3' and num < elements.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+
+            {% if elements.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ elements.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+
 {% endblock %}
+

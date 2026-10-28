@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Detalle del Elemento{% endblock %}
+{% block nav_inventory %}active{% endblock %}
+
+{% block content %}
+    <h1>{{ element.title }}</h1>
+    <p><strong>Nombre:</strong> {{ element.name }}</p>
+    <p><strong>Descripción:</strong> {{ element.description }}</p>
+    <p><strong>Precio:</strong> ${{ element.price }}</p>
+    <p><strong>Cantidad en Inventario:</strong> {{ element.quantity }}</p>
+    <p><strong>Distribuidor:</strong> {{ element.distributor.name }}</p>
+    <p><strong>Sitio Web del Producto:</strong> <a href="{{ element.prod_website }}" target="_blank">{{ element.prod_website }}</a></p>
+
+    <a href="{% url 'inventory' %}">Volver al Inventario</a>
+{% endblock %}
