@@ -7,7 +7,7 @@
 {% block content %}
     <h1>Inventario</h1>
     <p>Gestiona existencias, precios y disponibilidad.</p>
-    <a href="{% url 'create_element' %}" class="btn btn-success mb-3">Crear Nuevo Elemento</a>
+    <a href="{% url 'create_element' %}" class="btn btn-success mb-3">Registra un nuevo producto</a>
 
     {% for e in elements %}
         <div class="card mb-3">
@@ -21,48 +21,50 @@
                 <p class="card-text">Disponible: {% if e.quantity > 0 %}Sí{% else %}No{% endif %}</p>
             </div>
         </div>
+    {% empty %}
+        <p>No hay productos registrados.</p>
     {% endfor %}
     
 
-
-    <nav aria-label="Pagination" class="mt-4">
+    {% if elements.paginator.num_pages > 1 %}
+    <nav aria-label="Paginación del inventario" class="mt-4">
         <ul class="pagination justify-content-center">
             {% if elements.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ elements.previous_page_number }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
+                    <a class="page-link" href="?page={{ elements.previous_page_number }}" aria-label="Anterior">
+                        Anterior
                     </a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
-                    <span class="page-link" aria-hidden="true">&laquo;</span>
+                    <span class="page-link">Anterior</span>
                 </li>
             {% endif %}
 
             {% for num in elements.paginator.page_range %}
                 {% if elements.number == num %}
                     <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                {% elif num > elements.number|add:'-3' and num < elements.number|add:'3' %}
+                {% elif num == 1 or num == elements.paginator.num_pages or num > elements.number|add:'-3' and num < elements.number|add:'3' %}
                     <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-                {% else %}
-                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% elif num == elements.number|add:'-3' or num == elements.number|add:'3' %}
+                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
                 {% endif %}
             {% endfor %}
 
 
             {% if elements.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ elements.next_page_number }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
+                    <a class="page-link" href="?page={{ elements.next_page_number }}" aria-label="Siguiente">
+                        Siguiente
                     </a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
-                    <span class="page-link" aria-hidden="true">&raquo;</span>
+                    <span class="page-link">Siguiente</span>
                 </li>
             {% endif %}
         </ul>
-   
+    </nav>
+    {% endif %}
 
 {% endblock %}
-

@@ -1,15 +1,24 @@
 from django import forms
+from .models import Element
 
-class CreateElementForm(forms.Form):
-    name = forms.CharField(label="Nombre", max_length=255)
-    description = forms.CharField(label="Descripción", widget=forms.Textarea)
-    price = forms.DecimalField(label="Precio", max_digits=10, decimal_places=2)
-    quantity = forms.IntegerField(label="Cantidad")
-    min_quantity = forms.IntegerField(label="Cantidad Mínima")
-    distributor = forms.CharField(label="Distribuidor", max_length=255, required=False)
-    prod_website = forms.URLField(label="Sitio Web del Producto", required=False)
-    category = forms.CharField(label="Categoría", max_length=255)
-    type = forms.CharField(label="Tipo", max_length=255)
+class CreateElementForm(forms.ModelForm):
+
+    category = forms.CharField(max_length=255, strip=True)
+    type = forms.CharField(max_length=255, strip=True)
+
+    class Meta:
+        model = Element
+        fields = [
+            'name',
+            'description',
+            'content',
+            'price',
+            'quantity',
+            'min_quantity',
+            'available',
+            'distributor',
+            'prod_website',
+        ]
 
 class UserForm(forms.Form):
     username = forms.CharField(label="Nombre de usuario", max_length=150)

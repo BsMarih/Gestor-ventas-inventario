@@ -5,11 +5,100 @@
 {% block nav_inventory %}active{% endblock %}
 
 {% block content %}
-    <h1>Crear Nuevo Elemento</h1>
-    <form method="post" action="/Create/">
+    <h1>Registra un nuevo producto</h1>
+    <form method="post" action="{% url 'create_element' %}">
         {% csrf_token %}
-        {{form.as_ul}}
+
+        <div class="mb-3">
+        {{ form.name.label_tag }}
+        {{ form.name }}
+        </div>
+
+        <div class="mb-3">
+        {{ form.description.label_tag }}
+        {{ form.description }}</div>
+
+        <div class="mb-3">
+        {{ form.content.label_tag }}
+        {{ form.content }}</div>
+
+        <div class="mb-3">
+        {{ form.available.label_tag }}
+        {{ form.available }}
+        </div>
+
+        <div class="mb-3">
+        {{ form.price.label_tag }}
+        {{ form.price }}</div>
+
+        <div class="mb-3">
+        <label>Categoría</label>
+        <input
+            type="text"
+            name="category"
+            list="categories"
+            class="form-control"
+            value="{{ form.category.value|default_if_none:'' }}">
+        {{ form.category.errors }}
+
+        <datalist id="categories">
+            {% for c in categories %}
+                <option value="{{ c.name }}">
+            {% endfor %}
+        </datalist></div>
+
+        <div class="mb-3">
+        <br>
+
+        <label>Tipos existentes</label>
+
+        <select
+            id="type-select"
+            class="form-control">
+
+            <option value="">
+                Seleccione un tipo
+            </option>
+
+        </select>
+
+        <br>
+
+        <label>O escriba un nuevo tipo</label>
+
+        <input
+            type="text"
+            id="type-input"
+            name="type"
+            class="form-control"
+            value="{{ form.type.value|default_if_none:'' }}">
+        {{ form.type.errors }}
+        </div>
+
+        <div class="mb-3">
+        {{ form.quantity.label_tag }}
+        {{ form.quantity }}</div>
+
+        <div class="mb-3">
+        {{form.min_quantity.label_tag}}
+        {{form.min_quantity}}</div>
+
+        <div class="mb-3">
+        {{ form.distributor.label_tag }}
+        {{ form.distributor }}</div>
+
+        <div class="mb-3">
+        {{ form.prod_website.label_tag }}
+        {{ form.prod_website }}</div>
+
         <button type="submit" class="btn btn-primary">Crear</button>
         
     </form>
+
+    <script>
+        const getTypesUrl = "{% url 'get_types' %}";
+    </script>
+
+    <script src="{% static 'css/js/create_product.js' %}"></script>
+
 {% endblock %}
