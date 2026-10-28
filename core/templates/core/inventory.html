@@ -5,8 +5,13 @@
 {% block nav_inventory %}active{% endblock %}
 
 {% block content %}
-    <h1>Inventario</h1>
-    <p>Gestiona existencias, precios y disponibilidad.</p>
+<div class="dashboard-content">
+    <div class="title-page">
+        <h1 class="title">Inventario</h1>
+        <p class="subtitle">Gestiona existencias, precios y disponibilidad.</p>
+    </div>
+</div>
+
     <a href="{% url 'create_element' %}" class="btn btn-success mb-3">Crear Nuevo Elemento</a>
 
     {% for e in elements %}
