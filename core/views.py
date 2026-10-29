@@ -74,4 +74,61 @@ def create_element(request):
 
     return render(request,"core/create_product.html",context)
 
+def edit_products(request, element_id):
+    element = get_object_or_404(Element, id=element_id)
+
+    if request.method == "POST":
+        if request.POST.get("action") == "delete":
+            element.delete()
+            return redirect("inventory")
+
+        form = CreateElementForm(request.POST, instance=element)
+
+        if form.is_valid():
+            category_name = form.cleaned_data.pop("category").strip()
+            type_name = form.cleaned_data.pop("type").strip()
+
+            category, _ = Category.objects.get_or_create(name=category_name, defaults={"slug": slugify(category_name)})
+            type_obj, _ = Type.objects.get_or_create(
+                name=type_name,
+                category=category,
+                defaults={"slug": f"{category.slug}-{slugify(type_name)}"},
+            )
+
+            element = form.save(commit=False)
+            element.category = category
+            element.type = type_obj
+
+            base_slug = slugify(element.name) or f"elemento-{element.pk}"
+            element_slug = base_slug
+            suffix = 2
+            while Element.objects.exclude(pk=element.pk).filter(slug=element_slug).exists():
+                element_slug = f"{base_slug}-{suffix}"
+                suffix += 1
+
+            element.slug = element_slug
+            element.save()
+
+            return redirect("inventory")
+
+        categories = Category.objects.all()
+    else:
+        form = CreateElementForm(
+            instance=element,
+            initial={
+                "category": element.category.name,
+                "type": element.type.name,
+            },
+        )
+        categories = Category.objects.all()
+
+    return render(
+        request,
+        "core/edit_products.html",
+        {
+            "form": form,
+            "product": element,
+            "categories": categories,
+        },
+    )
     

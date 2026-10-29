@@ -3,16 +3,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const typeSelect = document.getElementById("type-select");
     const typeInput = document.getElementById("type-input");
 
-    categoryInput.addEventListener("change", function () {
+    function loadTypes(category, selectedType = "") {
         typeSelect.innerHTML = '<option value="">Seleccione un tipo</option>';
-        typeInput.value = "";
 
-        if (!this.value.trim()) {
+        if (!category) {
             return;
         }
 
-        const requestedCategory = this.value.trim();
-        fetch(`${getTypesUrl}?category=${encodeURIComponent(requestedCategory)}`)
+        fetch(`${getTypesUrl}?category=${encodeURIComponent(category)}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`No se pudieron cargar los tipos (${response.status})`);
@@ -20,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return response.json();
             })
             .then(types => {
-                if (categoryInput.value.trim() !== requestedCategory) {
+                if (categoryInput.value.trim() !== category) {
                     return;
                 }
 
@@ -30,8 +28,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     option.textContent = type;
                     typeSelect.appendChild(option);
                 });
+
+                if (types.includes(selectedType)) {
+                    typeSelect.value = selectedType;
+                }
             })
             .catch(error => console.error(error));
+    }
+
+    categoryInput.addEventListener("change", function () {
+        typeInput.value = "";
+        loadTypes(this.value.trim());
     });
 
     typeSelect.addEventListener("change", function () {
@@ -43,4 +50,6 @@ document.addEventListener("DOMContentLoaded", function () {
     typeInput.addEventListener("input", function () {
         typeSelect.value = "";
     });
+
+    loadTypes(categoryInput.value.trim(), typeInput.value.trim());
 });

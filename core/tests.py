@@ -88,3 +88,82 @@ class InventoryPaginationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["elements"].number, 1)
+
+
+class EditElementTests(TestCase):
+    def setUp(self):
+        self.category = Category.objects.create(name="Comida", slug="comida")
+        self.product_type = Type.objects.create(
+            name="Carne",
+            slug="comida-carne",
+            category=self.category,
+        )
+        self.element = Element.objects.create(
+            name="Bife",
+            slug="bife",
+            category=self.category,
+            type=self.product_type,
+        )
+
+    def test_edit_page_loads_existing_product_and_type_values(self):
+        response = self.client.get(
+            reverse("edit_product", args=[self.element.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["form"]["category"].value(), "Comida")
+        self.assertEqual(response.context["form"]["type"].value(), "Carne")
+
+    def test_post_updates_product_and_category_type_relationship(self):
+        response = self.client.post(
+            reverse("edit_product", args=[self.element.pk]),
+            {
+                "name": "Jugo",
+                "description": "Jugo natural",
+                "content": "1 litro",
+                "price": "25",
+                "quantity": "8",
+                "min_quantity": "2",
+                "available": "on",
+                "category": "Bebidas",
+                "type": "Jugo natural",
+                "distributor": "",
+                "prod_website": "",
+            },
+        )
+
+        self.assertRedirects(response, reverse("inventory"))
+        self.element.refresh_from_db()
+        self.assertEqual(self.element.name, "Jugo")
+        self.assertEqual(self.element.category.name, "Bebidas")
+        self.assertEqual(self.element.type.name, "Jugo natural")
+        self.assertEqual(self.element.type.category, self.element.category)
+        self.assertEqual(self.element.price, 25)
+        self.assertEqual(self.element.quantity, 8)
+
+    def test_invalid_edit_keeps_product_and_renders_errors(self):
+        response = self.client.post(
+            reverse("edit_product", args=[self.element.pk]),
+            {
+                "name": "Bife",
+                "price": "-1",
+                "quantity": "5",
+                "min_quantity": "1",
+                "category": "Comida",
+                "type": "Carne",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors)
+        self.element.refresh_from_db()
+        self.assertEqual(self.element.price, 0)
+
+    def test_delete_action_removes_product_and_redirects_to_inventory(self):
+        response = self.client.post(
+            reverse("edit_product", args=[self.element.pk]),
+            {"action": "delete"},
+        )
+
+        self.assertRedirects(response, reverse("inventory"))
+        self.assertFalse(Element.objects.filter(pk=self.element.pk).exists())
