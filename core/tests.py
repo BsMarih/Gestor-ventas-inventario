@@ -167,3 +167,60 @@ class EditElementTests(TestCase):
 
         self.assertRedirects(response, reverse("inventory"))
         self.assertFalse(Element.objects.filter(pk=self.element.pk).exists())
+
+
+class PrioritizedProductPreviewTests(TestCase):
+    def setUp(self):
+        category = Category.objects.create(name="Comida", slug="comida")
+        product_type = Type.objects.create(
+            name="Carne",
+            slug="comida-carne",
+            category=category,
+        )
+        Element.objects.bulk_create(
+            [
+                Element(
+                    name=f"Prioridad {quantity}",
+                    slug=f"prioridad-{quantity}",
+                    quantity=quantity,
+                    min_quantity=6,
+                    category=category,
+                    type=product_type,
+                )
+                for quantity in range(7)
+            ]
+            + [
+                Element(
+                    name="Stock suficiente",
+                    slug="stock-suficiente",
+                    quantity=8,
+                    min_quantity=6,
+                    category=category,
+                    type=product_type,
+                )
+            ]
+        )
+
+    def test_index_shows_at_most_five_most_urgent_products(self):
+        response = self.client.get(reverse("index"))
+
+        self.assertEqual(response.status_code, 200)
+        products = response.context["prioritized_products"]
+        self.assertEqual(len(products), 5)
+        self.assertEqual(
+            [product.name for product in products],
+            [f"Prioridad {quantity}" for quantity in range(5)],
+        )
+        self.assertNotContains(response, "Stock suficiente")
+
+    def test_index_shows_empty_message_when_no_products_need_restocking(self):
+        Element.objects.filter(quantity__lte=6).delete()
+
+        response = self.client.get(reverse("index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["prioritized_products"]), 0)
+        self.assertContains(
+            response,
+            "No hay productos que cumplan con el criterio de cantidad mínima.",
+        )

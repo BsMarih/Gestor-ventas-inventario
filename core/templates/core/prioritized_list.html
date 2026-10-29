@@ -1,0 +1,24 @@
+{% extends 'core/base.html' %}
+{% block title %}Lista Priorizada{% endblock %}
+{% block nav_inventory %}active{% endblock %}
+
+{% block content %}
+    <h1>Lista Priorizada</h1>
+    <p>Revisa qué productos debes renovar</p>
+
+    <div class="row"></div>
+        {% for e in elements %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ e.name }}</h5>
+                        <p class="card-text">Cantidad: {{ e.quantity }}</p>
+                        <p class="card-text">Mínimo: {{ e.min_quantity }}</p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>No hay productos priorizados.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

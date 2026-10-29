@@ -69,5 +69,22 @@
         </div>
     </div>
 </div>
-    
+
+<!-- vista previa : lista priorizada -->
+<div class="prioritized-list-section mt-5">
+    <h2 class="section-title"> <a href="{% url 'prioritized_list' %}">Productos necesarios a renovar</a> </h2>
+
+    {% if prioritized_products %}
+        <ul class="prioritized-list">
+            {% for product in prioritized_products %}
+                <li class="prioritized-item">
+                    <a href="{% url 'detail' product.id %}">{{ product.name }}</a>
+                    — Stock actual: {{ product.quantity }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay productos que cumplan con el criterio de cantidad mínima.</p>
+    {% endif %}
+</div>
 {% endblock %}

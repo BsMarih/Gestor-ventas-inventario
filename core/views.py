@@ -1,3 +1,4 @@
+from django.db import models
 from django.shortcuts import get_object_or_404, render,redirect
 from django.views.generic import ListView
 from django.core.paginator import Paginator
@@ -10,7 +11,9 @@ from .models import Element,Type,Category
 
 # Create your views here.
 def index(request):
-    return render(request, "core/index.html")
+    prioritized_products = (Element.objects.filter(quantity__lte=models.F("min_quantity"))
+        .order_by("quantity", "id")[:5])
+    return render(request,"core/index.html",{"prioritized_products": prioritized_products},)
 
 # vista que muestra detalles de productos
 def detail(request,pk):
@@ -131,4 +134,16 @@ def edit_products(request, element_id):
             "categories": categories,
         },
     )
+
+# funcionalidad corazón: lista priorizada
+def prioritized_list(request):
+    elements = Element.objects.filter(quantity__lte=models.F('min_quantity')).order_by('quantity')
     
+
+    return render(request, "core/prioritized_list.html", {"elements": elements})
+
+def sales(request):
+    elements = Element.objects.all()
+    
+
+    return render(request, "core/sales.html", {"elements": elements})
