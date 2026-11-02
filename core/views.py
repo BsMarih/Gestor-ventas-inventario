@@ -2,26 +2,41 @@ from django.db import models
 from django.shortcuts import get_object_or_404, render,redirect
 from django.views.generic import ListView
 from django.core.paginator import Paginator
-from .forms import CreateElementForm
+from .forms import CreateElementForm, SalesForm
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 from django.utils.text import slugify
 from django.http import JsonResponse
 
-from .models import Element,Type,Category
+from .models import Element,Type,Category,Sale
 
 # Create your views here.
 def index(request):
     prioritized_products = (Element.objects.filter(quantity__lte=models.F("min_quantity"))
         .order_by("quantity", "id")[:5])
-    return render(request,"core/index.html",{"prioritized_products": prioritized_products},)
+    today = timezone.localdate()
+    current_month_sales = Sale.objects.filter(date__year=today.year, date__month=today.month)
+    monthly_sales = current_month_sales.aggregate(
+        total=models.Sum(models.F("quantity") * models.F("element__price"))
+    )["total"] or 0
+    sales_quantity = Sale.objects.aggregate(total=models.Sum("quantity"))["total"] or 0
+    total_productos = Element.objects.filter(available=True, quantity__gt=0).count()
+
+    return render(
+        request,
+        "core/index.html",
+        {
+            "prioritized_products": prioritized_products,
+            "monthly_sales": monthly_sales,
+            "total_productos": total_productos,
+            "sales_quantity": sales_quantity,
+        },
+    )
 
 # vista que muestra detalles de productos
 def detail(request,pk):
     element = get_object_or_404(Element, pk=pk)
     return render(request, "core/detail.html", {"element": element})
-
-def sales(request):
-    return render(request, "core/sales.html")
 
 def get_types(request):
     category_name = request.GET.get('category')
@@ -143,7 +158,24 @@ def prioritized_list(request):
     return render(request, "core/prioritized_list.html", {"elements": elements})
 
 def sales(request):
-    elements = Element.objects.all()
-    
+    registered_sales = Sale.objects.select_related("element").order_by("-date", "-id")
+    sales_quantity = registered_sales.aggregate(total_quantity=models.Sum("quantity"))["total_quantity"] or 0
+    monthly_sales = registered_sales.annotate(month=models.functions.TruncMonth("date")).values("month").annotate(total_quantity=models.Sum("quantity")).order_by("month")
+    return render(request, "core/sales.html", {"sales": registered_sales, "sales_quantity": sales_quantity, "monthly_sales": monthly_sales})
 
-    return render(request, "core/sales.html", {"elements": elements})
+def register_sales(request):
+    form = SalesForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            Sale.objects.create(
+                date=form.cleaned_data["date"],
+                element=form.cleaned_data["associated_product"],
+                quantity=form.cleaned_data["quantity_sold"],
+            )
+            if quantity := form.cleaned_data["quantity_sold"]:
+                associated_product = form.cleaned_data["associated_product"]
+                associated_product.quantity -= quantity
+                associated_product.save()
+            return redirect("sales")
+
+    return render(request, "core/register_sales.html", {"form": form})

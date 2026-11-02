@@ -5,11 +5,25 @@
 {% block nav_sales %}active{% endblock %}
 
 {% block content %}
-<div class="dashboard-content">
-    <div class="title-page">
-        <h1 class="title">Ventas</h1>
-        <p class="subtitle">Consulta y registra todos tus movimientos.</p>
-    </div>
-</div>
+    <h1>Ventas</h1>
+    <p>Revisa las ventas registradas en el sistema</p>
+    <a href="{% url 'register_sales' %}" class="btn btn-primary">Registrar venta</a>
+
+    <div class="row">
+        {% for sale in sales %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Venta #{{ sale.id }}</h5>
+                        <p class="card-text"><strong>Producto:</strong> {{ sale.element.name }}</p>
+                        <p class="card-text"><strong>Cantidad:</strong> {{ sale.quantity }}</p>
+                        <p class="card-text"><strong>Fecha:</strong> {{ sale.date|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>No hay ventas registradas.</p>
+        {% endfor %}
+
     
 {% endblock %}

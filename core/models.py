@@ -48,6 +48,18 @@ class Element(models.Model):
     created= models.DateTimeField(auto_now_add=True)
     updated= models.DateTimeField(auto_now=True)
 
-    
+    def save(self, *args, **kwargs):
+        if self.quantity == 0:
+            self.available = False
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
+
+class Sale(models.Model):
+    date = models.DateField()
+    element = models.ForeignKey(Element, on_delete=models.CASCADE, related_name="sales")
+    quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"Venta #{self.pk}"

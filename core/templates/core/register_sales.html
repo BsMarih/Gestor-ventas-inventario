@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Registrar venta{% endblock %}
+{% block nav_register_sales %}active{% endblock %}
+
+{% block content %}
+    <h1>Registrar venta</h1>
+    <form method="post" action="{% url 'register_sales' %}">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="mb-3">
+            {{ form.date.label_tag }}
+            {{ form.date }}
+            {{ form.date.errors }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.associated_product.label_tag }}
+            {{ form.associated_product }}
+            {{ form.associated_product.errors }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.quantity_sold.label_tag }}
+            {{ form.quantity_sold }}
+            {{ form.quantity_sold.errors }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Registrar venta</button>
+    </form>
+{% endblock %}

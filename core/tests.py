@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
-from .models import Category, Element, Type
+from .models import Category, Element, Sale, Type
 
 
 class CreateElementTypeTests(TestCase):
@@ -88,6 +89,14 @@ class InventoryPaginationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["elements"].number, 1)
+
+    def test_zero_stock_product_is_shown_as_unavailable_even_if_flag_is_stale(self):
+        element = Element.objects.first()
+        Element.objects.filter(pk=element.pk).update(available=True)
+
+        response = self.client.get(reverse("inventory"))
+
+        self.assertContains(response, "Disponible: No")
 
 
 class EditElementTests(TestCase):
@@ -224,3 +233,153 @@ class PrioritizedProductPreviewTests(TestCase):
             response,
             "No hay productos que cumplan con el criterio de cantidad mínima.",
         )
+
+
+class DashboardSalesMetricsTests(TestCase):
+    def setUp(self):
+        category = Category.objects.create(name="Comida", slug="comida")
+        product_type = Type.objects.create(
+            name="Carne",
+            slug="comida-carne",
+            category=category,
+        )
+        self.active_element = Element.objects.create(
+            name="Bife",
+            slug="bife",
+            price=10,
+            quantity=1,
+            available=True,
+            category=category,
+            type=product_type,
+        )
+        Element.objects.create(
+            name="Producto inactivo",
+            slug="producto-inactivo",
+            available=False,
+            category=category,
+            type=product_type,
+        )
+
+    def test_dashboard_shows_current_month_revenue_and_all_time_units(self):
+        today = timezone.localdate()
+        previous_month = today.replace(day=1) - timezone.timedelta(days=1)
+        Sale.objects.create(date=today, element=self.active_element, quantity=3)
+        Sale.objects.create(date=previous_month, element=self.active_element, quantity=5)
+
+        response = self.client.get(reverse("index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["monthly_sales"], 30)
+        self.assertEqual(response.context["sales_quantity"], 8)
+        self.assertEqual(response.context["total_productos"], 1)
+
+    def test_dashboard_metrics_are_zero_when_there_are_no_sales_or_products(self):
+        Element.objects.all().delete()
+
+        response = self.client.get(reverse("index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["monthly_sales"], 0)
+        self.assertEqual(response.context["sales_quantity"], 0)
+        self.assertEqual(response.context["total_productos"], 0)
+
+    def test_dashboard_does_not_count_available_products_with_zero_stock(self):
+        Element.objects.filter(pk=self.active_element.pk).update(quantity=0)
+
+        response = self.client.get(reverse("index"))
+
+        self.assertEqual(response.context["total_productos"], 0)
+
+
+class SalesRegistrationTests(TestCase):
+    def setUp(self):
+        category = Category.objects.create(name="Comida", slug="comida")
+        product_type = Type.objects.create(
+            name="Carne",
+            slug="comida-carne",
+            category=category,
+        )
+        self.element = Element.objects.create(
+            name="Bife",
+            slug="bife",
+            quantity=5,
+            category=category,
+            type=product_type,
+        )
+
+    def test_registration_page_renders_form(self):
+        response = self.client.get(reverse("register_sales"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Registrar venta")
+        self.assertContains(response, "Producto asociado")
+
+    def test_valid_sale_is_saved_and_redirects_to_sales(self):
+        response = self.client.post(
+            reverse("register_sales"),
+            {
+                "date": "2026-11-01",
+                "associated_product": self.element.pk,
+                "quantity_sold": 2,
+            },
+        )
+
+        self.assertRedirects(response, reverse("sales"))
+        sale = Sale.objects.get()
+        self.assertEqual(sale.element, self.element)
+        self.assertEqual(sale.quantity, 2)
+
+    def test_selling_last_units_marks_product_unavailable(self):
+        self.client.post(
+            reverse("register_sales"),
+            {
+                "date": "2026-11-01",
+                "associated_product": self.element.pk,
+                "quantity_sold": 5,
+            },
+        )
+
+        self.element.refresh_from_db()
+        self.assertEqual(self.element.quantity, 0)
+        self.assertFalse(self.element.available)
+
+    def test_sale_cannot_exceed_available_stock(self):
+        response = self.client.post(
+            reverse("register_sales"),
+            {
+                "date": "2026-11-01",
+                "associated_product": self.element.pk,
+                "quantity_sold": 6,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("quantity_sold", response.context["form"].errors)
+        self.assertFalse(Sale.objects.exists())
+
+    def test_sales_page_lists_registered_sales(self):
+        Sale.objects.create(
+            date="2026-11-01",
+            element=self.element,
+            quantity=2,
+        )
+
+        response = self.client.get(reverse("sales"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Bife")
+        self.assertContains(response, "2")
+
+    def test_invalid_sale_does_not_create_record(self):
+        response = self.client.post(
+            reverse("register_sales"),
+            {
+                "date": "2026-11-01",
+                "associated_product": self.element.pk,
+                "quantity_sold": 0,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors)
+        self.assertFalse(Sale.objects.exists())

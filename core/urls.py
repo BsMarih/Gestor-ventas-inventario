@@ -11,4 +11,5 @@ urlpatterns = [
     path('ajax/get_types/', views.get_types, name='get_types'),
     path('edit/<int:element_id>/', views.edit_products, name='edit_product'),
     path('prioritized_list/', views.prioritized_list, name='prioritized_list'),
+    path("register_sales/", views.register_sales, name="register_sales"),
 ]
